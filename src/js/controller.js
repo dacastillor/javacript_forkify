@@ -4,6 +4,7 @@ import recipeView from './views/recipeView.js';
 import 'core-js/stable'; //polyfilling remaining features
 import 'regenerator-runtime/runtime'; // polyfilling async/await
 import searchView from './views/searchView.js';
+import resultsView from './views/resultsView.js'
 
 // Controller = Lógica de orquestación entre Modelo y Vista
 
@@ -28,10 +29,12 @@ const controlRecipe = async function () {
 
 const controlSearchResults = async function () {
   try {
+    resultsView.renderSpinner();
     const query = searchView.getQuery();
     if (!query) return;
     await model.loadSearchResults(query);
-    console.log(model.state.search.results);
+    //console.log(model.state.search.results);
+    resultsView.render(model.state.search.results)
   } catch (err) {
     console.log(err);
   }

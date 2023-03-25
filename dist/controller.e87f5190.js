@@ -887,11 +887,13 @@ try {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TIMEOUT_SEC = exports.API_URL = void 0;
+exports.TIMEOUT_SEC = exports.REST_PER_PAGES = exports.API_URL = void 0;
 var API_URL = 'https://forkify-api.herokuapp.com/api/v2/recipes/';
 exports.API_URL = API_URL;
 var TIMEOUT_SEC = 10;
 exports.TIMEOUT_SEC = TIMEOUT_SEC;
+var REST_PER_PAGES = 10;
+exports.REST_PER_PAGES = REST_PER_PAGES;
 },{}],"src/js/helpers.js":[function(require,module,exports) {
 "use strict";
 
@@ -963,7 +965,7 @@ exports.getJSON = getJSON;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.state = exports.loadSearchResults = exports.loadRecipe = void 0;
+exports.state = exports.loadSearchResults = exports.loadRecipe = exports.getSearchResultsPage = void 0;
 var _regeneratorRuntime2 = require("regenerator-runtime");
 var _config = require("./config");
 var _helpers = require("./helpers");
@@ -977,7 +979,9 @@ var state = {
   recipe: {},
   search: {
     query: '',
-    results: []
+    results: [],
+    page: 1,
+    resultsPerPage: _config.REST_PER_PAGES
   }
 };
 exports.state = state;
@@ -1061,7 +1065,13 @@ var loadSearchResults = /*#__PURE__*/function () {
   };
 }();
 exports.loadSearchResults = loadSearchResults;
-loadSearchResults('pizza');
+var getSearchResultsPage = function getSearchResultsPage() {
+  var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : state.search.page;
+  var start = (page - 1) * state.search.resultsPerPage;
+  var end = page * state.search.resultsPerPage;
+  return state.search.results.slice(start, end);
+};
+exports.getSearchResultsPage = getSearchResultsPage;
 },{"regenerator-runtime":"node_modules/regenerator-runtime/runtime.js","./config":"src/js/config.js","./helpers":"src/js/helpers.js"}],"src/img/icons.svg":[function(require,module,exports) {
 module.exports = "/icons.ae3c38d5.svg";
 },{}],"src/js/views/View.js":[function(require,module,exports) {
@@ -17400,8 +17410,7 @@ var controlSearchResults = /*#__PURE__*/function () {
           _context2.next = 7;
           return model.loadSearchResults(query);
         case 7:
-          //console.log(model.state.search.results);
-          _resultsView.default.render(model.state.search.results);
+          _resultsView.default.render(model.getSearchResultsPage());
           _context2.next = 13;
           break;
         case 10:
@@ -17448,7 +17457,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65464" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55026" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

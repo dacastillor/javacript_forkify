@@ -5,6 +5,7 @@ import 'core-js/stable'; //polyfilling remaining features
 import 'regenerator-runtime/runtime'; // polyfilling async/await
 import searchView from './views/searchView.js';
 import resultsView from './views/resultsView.js'
+import paginationView from './views/paginationView.js';
 
 // Controller = Lógica de orquestación entre Modelo y Vista
 
@@ -33,15 +34,30 @@ const controlSearchResults = async function () {
     const query = searchView.getQuery();
     if (!query) return;
     await model.loadSearchResults(query);
+
+    // Renderiza los resultados de la bùsqueda
     resultsView.render(model.getSearchResultsPage());
+
+    // Renderiza los botones de la paginación
+    paginationView.render(model.state.search);
   } catch (err) {
     console.log(err);
   }
 };
 
+const controlPagination = function(goToPage){
+  
+  // Renderiza los resultados de la bùsqueda, dependiendo de la página
+  resultsView.render(model.getSearchResultsPage(goToPage));
+
+  // Renderiza los botones de la paginación, dependiendo de la página
+  paginationView.render(model.state.search);
+}
+
 const init = function () {
   recipeView.addHandlerRender(controlRecipe);
   searchView.addHandlerSearch(controlSearchResults);
+  paginationView.addClickHandler(controlPagination);
 };
 
 init();

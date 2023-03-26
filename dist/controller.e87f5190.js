@@ -1067,6 +1067,7 @@ var loadSearchResults = /*#__PURE__*/function () {
 exports.loadSearchResults = loadSearchResults;
 var getSearchResultsPage = function getSearchResultsPage() {
   var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : state.search.page;
+  state.search.page = page;
   var start = (page - 1) * state.search.resultsPerPage;
   var end = page * state.search.resultsPerPage;
   return state.search.results.slice(start, end);
@@ -17334,7 +17335,87 @@ var ResultsView = /*#__PURE__*/function (_View) {
 }(_View2.default);
 var _default = new ResultsView();
 exports.default = _default;
-},{"./View":"src/js/views/View.js"}],"src/js/controller.js":[function(require,module,exports) {
+},{"./View":"src/js/views/View.js"}],"src/js/views/paginationView.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _View2 = _interopRequireDefault(require("./View"));
+var _icons = _interopRequireDefault(require("../../img/icons.svg"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+// Parcel 1
+var PaginationView = /*#__PURE__*/function (_View) {
+  _inherits(PaginationView, _View);
+  var _super = _createSuper(PaginationView);
+  function PaginationView() {
+    var _this;
+    _classCallCheck(this, PaginationView);
+    for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+    _this = _super.call.apply(_super, [this].concat(args));
+    _defineProperty(_assertThisInitialized(_this), "_parentElement", document.querySelector('.pagination'));
+    return _this;
+  }
+  _createClass(PaginationView, [{
+    key: "addClickHandler",
+    value: function addClickHandler(handler) {
+      this._parentElement.addEventListener('click', function (e) {
+        var btn = e.target.closest('.btn--inline');
+        if (!btn) return; // si se oprime fuera del botón de cambiar página pero dentro del contenedor de los dos botones, no se hace nada
+        var goToPageData = +btn.dataset.goto;
+        handler(goToPageData);
+      });
+    }
+  }, {
+    key: "_generateMarkup",
+    value: function _generateMarkup() {
+      var currentPage = this._data.page;
+      var numPages = Math.ceil(this._data.results.length / this._data.resultsPerPage);
+
+      // Pagina 1
+
+      if (currentPage === 1 && numPages > 1) {
+        return "\n            <button data-goto=\"".concat(currentPage + 1, "\" class=\"btn--inline pagination__btn--next\">\n                <span>Page ").concat(currentPage + 1, "</span>\n                <svg class=\"search__icon\">\n                    <use href=\"").concat(_icons.default, "#icon-arrow-right\"></use>\n                </svg>\n            </button>\n            ");
+      }
+
+      // Ultima pagina
+
+      if (currentPage === numPages && numPages > 1) {
+        return "\n            <button data-goto=\"".concat(currentPage - 1, "\" class=\"btn--inline pagination__btn--prev\">\n                <svg class=\"search__icon\">\n                    <use href=\"").concat(_icons.default, "#icon-arrow-left\"></use>\n                </svg>\n                <span>Page ").concat(currentPage - 1, "</span>\n            </button>");
+      }
+
+      // Si hay más páginas
+
+      if (currentPage < numPages) {
+        return "\n            <button data-goto=\"".concat(currentPage - 1, "\" class=\"btn--inline pagination__btn--prev\">\n                <svg class=\"search__icon\">\n                    <use href=\"").concat(_icons.default, "#icon-arrow-left\"></use>\n                </svg>\n                <span>Page ").concat(currentPage - 1, "</span>\n            </button>\n            <button data-goto=\"").concat(currentPage + 1, "\" class=\"btn--inline pagination__btn--next\">\n                <span>Page ").concat(currentPage + 1, "</span>\n                <svg class=\"search__icon\">\n                    <use href=\"").concat(_icons.default, "#icon-arrow-right\"></use>\n                </svg>\n            </button>");
+      }
+
+      // Si no hay más páginas
+      return '';
+    }
+  }]);
+  return PaginationView;
+}(_View2.default);
+var _default = new PaginationView();
+exports.default = _default;
+},{"./View":"src/js/views/View.js","../../img/icons.svg":"src/img/icons.svg"}],"src/js/controller.js":[function(require,module,exports) {
 var define;
 "use strict";
 
@@ -17344,6 +17425,7 @@ require("core-js/stable");
 require("regenerator-runtime/runtime");
 var _searchView = _interopRequireDefault(require("./views/searchView.js"));
 var _resultsView = _interopRequireDefault(require("./views/resultsView.js"));
+var _paginationView = _interopRequireDefault(require("./views/paginationView.js"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -17410,29 +17492,41 @@ var controlSearchResults = /*#__PURE__*/function () {
           _context2.next = 7;
           return model.loadSearchResults(query);
         case 7:
+          // Renderiza los resultados de la bùsqueda
           _resultsView.default.render(model.getSearchResultsPage());
-          _context2.next = 13;
+
+          // Renderiza los botones de la paginación
+          _paginationView.default.render(model.state.search);
+          _context2.next = 14;
           break;
-        case 10:
-          _context2.prev = 10;
+        case 11:
+          _context2.prev = 11;
           _context2.t0 = _context2["catch"](0);
           console.log(_context2.t0);
-        case 13:
+        case 14:
         case "end":
           return _context2.stop();
       }
-    }, _callee2, null, [[0, 10]]);
+    }, _callee2, null, [[0, 11]]);
   }));
   return function controlSearchResults() {
     return _ref2.apply(this, arguments);
   };
 }();
+var controlPagination = function controlPagination(goToPage) {
+  // Renderiza los resultados de la bùsqueda, dependiendo de la página
+  _resultsView.default.render(model.getSearchResultsPage(goToPage));
+
+  // Renderiza los botones de la paginación, dependiendo de la página
+  _paginationView.default.render(model.state.search);
+};
 var init = function init() {
   _recipeView.default.addHandlerRender(controlRecipe);
   _searchView.default.addHandlerSearch(controlSearchResults);
+  _paginationView.default.addClickHandler(controlPagination);
 };
 init();
-},{"./model.js":"src/js/model.js","./views/recipeView.js":"src/js/views/recipeView.js","core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","./views/searchView.js":"src/js/views/searchView.js","./views/resultsView.js":"src/js/views/resultsView.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./model.js":"src/js/model.js","./views/recipeView.js":"src/js/views/recipeView.js","core-js/stable":"node_modules/core-js/stable/index.js","regenerator-runtime/runtime":"node_modules/regenerator-runtime/runtime.js","./views/searchView.js":"src/js/views/searchView.js","./views/resultsView.js":"src/js/views/resultsView.js","./views/paginationView.js":"src/js/views/paginationView.js"}],"node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -17457,7 +17551,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55026" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61500" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

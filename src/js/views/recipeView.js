@@ -38,14 +38,14 @@ class RecipeView extends View{
           <span class="recipe__info-text">servings</span>
 
           <div class="recipe__info-buttons">
-            <button class="btn--tiny btn--increase-servings">
+            <button class="btn--tiny btn--update--servings" data-update-to="${this._data.servings -1}">
               <svg>
-                <use href="src/img/icons.svg#icon-minus-circle"></use>
+                <use href="${icons}#icon-minus-circle"></use>
               </svg>
             </button>
-            <button class="btn--tiny btn--increase-servings">
+            <button class="btn--tiny btn--update--servings" data-update-to="${this._data.servings +1}">
               <svg>
-                <use href="src/img/icons.svg#icon-plus-circle"></use>
+                <use href="${icons}#icon-plus-circle"></use>
               </svg>
             </button>
           </div>
@@ -114,6 +114,16 @@ class RecipeView extends View{
   // publisher
   addHandlerRender(handler) {
     ['hashchange', 'load'].forEach(ev => window.addEventListener(ev, handler));
+  }
+
+  addHadlerUpdateServing(handler) {
+    this._parentElement.addEventListener('click', function(e){
+      const btn = e.target.closest('.btn--update--servings');
+      if(!btn) return;
+      if(+btn.dataset.updateTo < 1) return // no tiene sentido servir 0 porciones de un plato
+      const updateTo = +btn.dataset.updateTo; 
+      handler(updateTo);
+    })
   }
 }
 

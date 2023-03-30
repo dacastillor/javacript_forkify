@@ -14,6 +14,29 @@ _data;
     this._parentElement.innerHTML = '';
   }
 
+  update(data){
+    this._data = data;
+    const newMarkup = this._generateMarkup();
+
+    const newDOM = document.createRange().createContextualFragment(newMarkup);
+    const newElements = Array.from(newDOM.querySelectorAll('*'));
+    const currentElements = Array.from(this._parentElement.querySelectorAll('*'));
+
+    newElements.forEach((newEl,i)=>{
+      const curEl = currentElements[i];
+
+      if(!newEl.isEqualNode(curEl) && newEl.firstChild?.nodeValue.trim() !== ''){// Este va a actualizar sólo los campos de texto que perciban cambios dentro de sus elementos hijos
+        curEl.textContent = newEl.textContent;        
+      }
+
+      if(!newEl.isEqualNode(curEl))
+        Array.from(newEl.attributes).forEach(attr => 
+          curEl.setAttribute(attr.name, attr.value)); // Cambiar los atributos de los elementos para poder usar los botones y actualizar el DOM            
+    })
+
+
+  }
+
   renderSpinner() {
     const markupSpinner = `
       <div class="spinner">

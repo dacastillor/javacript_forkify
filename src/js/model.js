@@ -11,6 +11,7 @@ export const state = {
     page: 1,
     resultsPerPage: REST_PER_PAGES,    
   },
+  bookmarks: []
 };
 
 export const loadRecipe = async function (id) {
@@ -31,6 +32,15 @@ export const loadRecipe = async function (id) {
       cookingTime: recipe.cooking_time,
       ingredients: recipe.ingredients,
     };
+
+    if(state.bookmarks.some(bookmark => bookmark.id === id)){
+      state.recipe.bookmarked = true;
+    }else{
+      state.recipe.bookmarked = false;
+    }
+      
+
+
   } catch (err) {
     // Error temporal
     console.error(`${err} (Temporal Version)`);
@@ -51,6 +61,7 @@ export const loadSearchResults = async function (query) {
         image: rec.image_url,
       };
     });
+    state.search.page = 1; // esto se hace ya que la paginación se daña al cambiar el 
   } catch (err) {
     console.log(err);
     throw err;
@@ -75,5 +86,26 @@ export const updateServings =  function(newServings) {
   });
 
   state.recipe.servings = newServings;
+
+}
+
+export const addBookmark = function(recipe){
+
+  state.bookmarks.push(recipe);
+
+  if(recipe.id === state.recipe.id) state.recipe.bookmarked = true;
+
+}
+
+export const deleteBookmark = function(id){
+  
+
+  // Eliminar bookmark
+  const index = state.bookmarks.findIndex( el => el.id  === id);
+  state.bookmarks.splice(index, 1);
+
+  // Setear la receta sin Bookmark
+  if (id === state.recipe.id) state.recipe.bookmarked = false;
+
 
 }

@@ -6,6 +6,10 @@ import 'regenerator-runtime/runtime'; // polyfilling async/await
 import searchView from './views/searchView.js';
 import resultsView from './views/resultsView.js'
 import paginationView from './views/paginationView.js';
+import bookmarksView from './views/bookmarksView.js'
+
+
+
 
 // Controller = Lógica de orquestación entre Modelo y Vista
 
@@ -20,6 +24,9 @@ const controlRecipe = async function () {
 
     // Update results view to mark selected search result
     resultsView.update(model.getSearchResultsPage()); // con esto se queda seleccionada 
+
+    bookmarksView.update(model.state.bookmarks);
+
 
     // Loading Recipe
     await model.loadRecipe(id);
@@ -68,7 +75,16 @@ const controlPagination = function(goToPage){
 const controlAddBookmark = function(){
   if (!model.state.recipe.bookmarked) model.addBookmark(model.state.recipe)
   else model.deleteBookmark(model.state.recipe.id);
+
+
+  // Update recipe view
+
   recipeView.update(model.state.recipe);
+
+  // Render bookmarks
+
+  bookmarksView.render(model.state.bookmarks);
+  
 }
 
 const init = function () {

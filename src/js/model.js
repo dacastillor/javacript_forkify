@@ -1,6 +1,7 @@
 import { async } from 'regenerator-runtime';
-import { API_URL, REST_PER_PAGES } from './config';
-import { getJSON } from './helpers';
+import { API_URL, REST_PER_PAGES, KEY } from './config';
+//import { getJSON,sendJSON } from './helpers';
+import {AJAX} from './helpers';
 // Model = Lógica de negocio
 
 export const state = {
@@ -14,24 +15,30 @@ export const state = {
   bookmarks: []
 };
 
+const createRecipeObject =  function(data){
+  const { recipe } = data.data;
+  return {
+    id: recipe.id,
+    title: recipe.title,
+    publisher: recipe.publisher,
+    sourceUrl: recipe.source_url,
+    image: recipe.image_url,
+    servings: recipe.servings,
+    cookingTime: recipe.cooking_time,
+    ingredients: recipe.ingredients,
+    ...(recipe.key && {key: recipe.key}), // si el key existe
+  };
+}
+
 export const loadRecipe = async function (id) {
   // esto trae el recipe desde el API y lo envía al controlador
   try {
-    const reciData = await getJSON(
+    const reciData = await AJAX(
       // información desde API
-      `${API_URL}/${id}`
+      `${API_URL}${id}?key=${KEY}`
     );
-    const { recipe } = reciData.data;
-    state.recipe = {
-      id: recipe.id,
-      title: recipe.title,
-      publisher: recipe.publisher,
-      sourceURL: recipe.source_url,
-      image: recipe.image_url,
-      servings: recipe.servings,
-      cookingTime: recipe.cooking_time,
-      ingredients: recipe.ingredients,
-    };
+    
+    state.recipe = createRecipeObject(reciData);
 
     if(state.bookmarks.some(bookmark => bookmark.id === id)){
       state.recipe.bookmarked = true;
@@ -51,7 +58,7 @@ export const loadRecipe = async function (id) {
 export const loadSearchResults = async function (query) {
   try {
     state.search.query = query;
-    const searchData = await getJSON(`${API_URL}?search=${query}`);
+    const searchData = await AJAX(`${API_URL}?search=${query}&key=${KEY}`);
 
     state.search.results = searchData.data.recipes.map(rec => {
       return {
@@ -59,6 +66,7 @@ export const loadSearchResults = async function (query) {
         title: rec.title,
         publisher: rec.publisher,
         image: rec.image_url,
+        ...(rec.key && {key: rec.key}), // si el key existe
       };
     });
     state.search.page = 1; // esto se hace ya que la paginación se daña al cambiar el 
@@ -126,4 +134,37 @@ const init = function(){
 
 init();
 
-console.log(state.bookmarks);
+export const uploadRecipe = async function (newRecipe){
+  try{
+    const ingredients = Object.entries(newRecipe)
+      .filter(entry => entry[0].startsWith('ingredient') && entry[1] !== '')
+      .map(ing=>{ 
+        const ingArray = ing[1].split(',').map(el=>el.trim())      
+      
+        if(ingArray.length !== 3) throw new Error ("Missing fields in ingredients, check format");
+  
+        const [quantity, unit, description] = ingArray;
+        
+        return { quantity: quantity ? +quantity : null, unit, description};
+      });
+      
+      const recipe = {
+        title: newRecipe.title,
+        source_url: newRecipe.sourceUrl,
+        image_url: newRecipe.image,
+        publisher: newRecipe.publisher,
+        cooking_time: +newRecipe.cookingTime,
+        servings: +newRecipe.servings,
+        ingredients,
+      }
+
+      const data= await AJAX(`${API_URL}?key=${KEY}`, recipe)
+      console.log(data);
+      state.recipe = createRecipeObject(data);
+      addBookmark(state.recipe);
+
+    } catch (err){
+      throw err;
+    }
+  
+}
